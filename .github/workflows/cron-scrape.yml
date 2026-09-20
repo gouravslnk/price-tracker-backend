@@ -1,0 +1,27 @@
+name: Scheduled Price Scrape Cron
+
+on:
+  schedule:
+    # Runs every 2 hours at minute 0 (00:00, 02:00, 04:00, 06:00, 08:00, 10:00, 12:00, 14:00, 16:00, 18:00, 20:00, 22:00 UTC)
+    - cron: '0 */2 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  trigger-scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Backend Keep-Warm
+        run: |
+          BACKEND_URL="${{ secrets.BACKEND_API_URL || 'https://ine-price-tracker-backend.onrender.com' }}"
+          echo "Pinging health endpoint at $BACKEND_URL/health"
+          curl -s -f "$BACKEND_URL/health" || true
+
+      - name: Trigger 2-Hour Batch Scrape
+        run: |
+          BACKEND_URL="${{ secrets.BACKEND_API_URL || 'https://ine-price-tracker-backend.onrender.com' }}"
+          CRON_SECRET="${{ secrets.CRON_SECRET || 'your-secure-cron-secret-key' }}"
+          echo "Triggering batch scrape on $BACKEND_URL/api/scrape/trigger"
+          response=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST "$BACKEND_URL/api/scrape/trigger" \
+            -H "Content-Type: application/json" \
+            -H "x-cron-secret: $CRON_SECRET")
+          echo "$response"

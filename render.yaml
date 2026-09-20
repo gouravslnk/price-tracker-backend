@@ -3,7 +3,7 @@ services:
     name: price-tracker-backend
     env: node
     plan: free
-    buildCommand: npm install
+    buildCommand: npm install && npx playwright install --with-deps chromium
     startCommand: npm start
     envVars:
       - key: PORT
@@ -12,6 +12,12 @@ services:
         value: production
       - key: MOCK_STORE_URL
         value: https://demo.inelabteamdev.com
+      - key: HEADLESS
+        value: "true"
+      - key: MAX_SCRAPE_ATTEMPTS
+        value: "6"
+      - key: SCRAPE_CONCURRENCY
+        value: "2"
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
