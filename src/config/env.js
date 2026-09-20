@@ -12,7 +12,7 @@ export const config = {
     
     // Scraper Configuration & Tuning
     get maxScrapeAttempts() { return parseInt(process.env.MAX_SCRAPE_ATTEMPTS || "6", 10); },
-    get scrapeConcurrency() { return parseInt(process.env.SCRAPE_CONCURRENCY || "2", 10); },
+    get scrapeConcurrency() { return parseInt(process.env.SCRAPE_CONCURRENCY || "1", 10); },
     get screenshotOnFailure() { return process.env.SCREENSHOT_ON_FAILURE === "true"; },
     get scraperDebug() { return process.env.SCRAPER_DEBUG === "true"; },
     get demoMode() { return process.env.DEMO_MODE === "true"; },

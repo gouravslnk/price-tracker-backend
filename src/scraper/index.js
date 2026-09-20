@@ -232,7 +232,7 @@ export async function scrapeProduct(storeProductId, options = {}) {
 }
 
 /**
- * Run scraper for all active tracked products in parallel batches bounded by SCRAPE_CONCURRENCY
+ * Run scraper for all active tracked products in sequential batches (Concurrency: 1 for Render Free-tier RAM optimization)
  * @param {object} options 
  */
 export async function scrapeAllActiveProducts(options = {}) {
@@ -242,15 +242,15 @@ export async function scrapeAllActiveProducts(options = {}) {
         return { processedCount: 0, results: [] };
     }
 
-    const concurrency = config.scrapeConcurrency || 2;
-    logger.info(`[Batch Scraper] Starting batch scrape for ${products.length} active products (Concurrency limit: ${concurrency})`);
+    const concurrency = Math.max(1, config.scrapeConcurrency || 1);
+    logger.info(`[Batch Scraper] Starting batch scrape for ${products.length} active products (Concurrency: ${concurrency} - sequential mode)`);
 
     const browser = await getBrowserInstance();
     const results = [];
 
-    // Worker pool queue
+    // Worker pool queue (processes 1 by 1 sequentially when concurrency=1)
     const queue = [...products];
-    const workers = Array.from({ length: Math.min(concurrency, products.length) }, async () => {
+    const workers = Array.from({ length: Math.min(concurrency, products.length) }, async (workerId) => {
         while (queue.length > 0) {
             const product = queue.shift();
             if (!product) break;
@@ -269,6 +269,11 @@ export async function scrapeAllActiveProducts(options = {}) {
                     storeProductId: product.store_product_id,
                     result: { success: false, error: err.message }
                 });
+            }
+
+            // Brief 500ms delay between products to allow garbage collection & prevent CPU/RAM spikes on Render
+            if (queue.length > 0) {
+                await new Promise(res => setTimeout(res, 500));
             }
         }
     });
