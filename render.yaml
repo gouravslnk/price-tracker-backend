@@ -3,7 +3,7 @@ services:
     name: price-tracker-backend
     env: node
     plan: free
-    buildCommand: npm install && npx playwright install --with-deps chromium
+    buildCommand: npm install && npx playwright install chromium
     startCommand: npm start
     envVars:
       - key: PORT
