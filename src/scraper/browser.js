@@ -16,6 +16,10 @@ export async function getBrowserInstance(options = {}) {
         if (sharedBrowserIsHeadless === isHeadless) {
             return sharedBrowser;
         }
+        logger.info(`[Browser Manager] Relaunching Chromium Browser for updated mode (Headless: ${isHeadless})`);
+        await closeSharedBrowser();
+    }
+
     logger.info(`[Browser Manager] Launching Chromium Browser (Headless: ${isHeadless})`);
     
     const launchOptions = {
