@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { productController } from "../controllers/productController.js";
+import { scrapeController } from "../controllers/scrapeController.js";
 
 const router = Router();
 
@@ -9,6 +10,9 @@ router.get("/search", productController.search);
 // Tracked Products List (both GET / and GET /tracked supported)
 router.get("/", productController.getTracked);
 router.get("/tracked", productController.getTracked);
+
+// Batch refresh all tracked products
+router.post("/refresh-all", scrapeController.triggerAllScrapes);
 
 // Track / Untrack Product
 router.post("/track", productController.trackProduct);
