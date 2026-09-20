@@ -1,0 +1,21 @@
+{
+  "name": "price-tracker-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Production Express Backend & Playwright Scraper for INE Product Price Tracker",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test tests/*.test.js",
+    "scrape:headed": "node scripts/headed-run.js --headed",
+    "postinstall": "npx playwright install --with-deps chromium || npx playwright install chromium"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.47.10",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "playwright": "^1.49.1"
+  }
+}
