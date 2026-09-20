@@ -105,7 +105,7 @@ export const productController = {
 
             // Check if already tracked
             const existing = await db.getTrackedProductByStoreId(targetStoreProductId);
-            const isHeaded = req.query.headed !== undefined ? req.query.headed === "true" : undefined;
+            const isHeaded = req.query.headed !== undefined ? req.query.headed === "true" : (req.body?.headed !== undefined ? Boolean(req.body.headed) : undefined);
 
             if (existing) {
                 // If product already tracked, trigger fresh scrape on re-add
@@ -288,7 +288,7 @@ export const productController = {
                 });
             }
 
-            const isHeaded = req.query.headed !== undefined ? req.query.headed === "true" : undefined;
+            const isHeaded = req.query.headed !== undefined ? req.query.headed === "true" : (req.body?.headed !== undefined ? Boolean(req.body.headed) : undefined);
             const result = await scrapeProduct(product.store_product_id, {
                 trackedProductId: product.id,
                 ...(isHeaded !== undefined ? { isHeaded } : {})

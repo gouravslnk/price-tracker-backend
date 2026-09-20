@@ -236,6 +236,7 @@ export async function scrapeProduct(storeProductId, options = {}) {
  * @param {object} options 
  */
 export async function scrapeAllActiveProducts(options = {}) {
+    const { isHeaded = undefined } = options;
     const products = await db.getTrackedProducts(true);
     if (products.length === 0) {
         logger.info("[Batch Scraper] No active products found to scrape.");
@@ -243,9 +244,9 @@ export async function scrapeAllActiveProducts(options = {}) {
     }
 
     const concurrency = Math.max(1, config.scrapeConcurrency || 1);
-    logger.info(`[Batch Scraper] Starting batch scrape for ${products.length} active products (Concurrency: ${concurrency} - sequential mode)`);
+    logger.info(`[Batch Scraper] Starting batch scrape for ${products.length} active products (Concurrency: ${concurrency} - sequential mode, Headed: ${isHeaded})`);
 
-    const browser = await getBrowserInstance();
+    const browser = await getBrowserInstance({ isHeaded });
     const results = [];
 
     // Worker pool queue (processes 1 by 1 sequentially when concurrency=1)
@@ -259,6 +260,7 @@ export async function scrapeAllActiveProducts(options = {}) {
                 logger.info(`[Batch Worker] Processing product ${product.store_product_id} (${product.name})`);
                 const result = await scrapeProduct(product.store_product_id, {
                     trackedProductId: product.id,
+                    isHeaded,
                     customBrowser: browser
                 });
                 results.push({ productId: product.id, storeProductId: product.store_product_id, result });

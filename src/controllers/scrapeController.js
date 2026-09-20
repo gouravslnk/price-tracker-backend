@@ -42,9 +42,11 @@ export const scrapeController = {
                 productIds: activeProducts.map(p => p.store_product_id)
             });
 
+            const isHeaded = req.query.headed !== undefined ? req.query.headed === "true" : (req.body?.headed !== undefined ? Boolean(req.body.headed) : undefined);
+
             // Execute batch scrape with bounded concurrency worker pool
             try {
-                await scrapeAllActiveProducts();
+                await scrapeAllActiveProducts({ isHeaded });
             } catch (batchErr) {
                 logger.error("[Cron Webhook] Batch scrape encountered error", batchErr);
             } finally {
