@@ -16,15 +16,32 @@ export async function getBrowserInstance(options = {}) {
         if (sharedBrowserIsHeadless === isHeadless) {
             return sharedBrowser;
         }
-        logger.info(`[Browser Manager] Relaunching Chromium Browser for updated mode (Headless: ${isHeadless})`);
-        await closeSharedBrowser();
-    }
-
     logger.info(`[Browser Manager] Launching Chromium Browser (Headless: ${isHeadless})`);
-    sharedBrowser = await chromium.launch({
+    
+    const launchOptions = {
         headless: isHeadless,
-        slowMo: isHeadless ? 0 : 150
-    });
+        slowMo: isHeadless ? 0 : 150,
+        args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-accelerated-2d-canvas",
+            "--disable-gpu"
+        ]
+    };
+
+    try {
+        sharedBrowser = await chromium.launch(launchOptions);
+    } catch (launchErr) {
+        if (launchErr.message?.includes("Executable doesn't exist") || launchErr.message?.includes("Please run the following command")) {
+            logger.warn("[Browser Manager] Chromium binary missing at runtime, auto-installing via npx playwright install...");
+            const { execSync } = await import("child_process");
+            execSync("npx playwright install chromium", { stdio: "inherit" });
+            sharedBrowser = await chromium.launch(launchOptions);
+        } else {
+            throw launchErr;
+        }
+    }
     sharedBrowserIsHeadless = isHeadless;
 
     return sharedBrowser;

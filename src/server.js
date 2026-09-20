@@ -1,3 +1,5 @@
+process.env.PLAYWRIGHT_BROWSERS_PATH = process.env.PLAYWRIGHT_BROWSERS_PATH || "0";
+
 import app from "./app.js";
 import { config, validateEnv } from "./config/env.js";
 import { logger } from "./utils/logger.js";
