@@ -4,6 +4,15 @@ Production-grade Node.js/Express backend API and Playwright browser automation s
 
 ---
 
+## 🔗 Assignment Deliverables & Live Links
+
+- **Hosted Web App (Frontend)**: [https://price-tracker-frontend-gray.vercel.app](https://price-tracker-frontend-gray.vercel.app)
+- **Hosted REST API (Backend)**: [https://price-tracker-backend-352r.onrender.com](https://price-tracker-backend-352r.onrender.com)
+- **Headed Scraper Demo Recording**: [Google Drive Video Demo](https://drive.google.com/file/d/1-X1a9-u7oqQ_UsXIBzuHLADjCHcQbITA/view?usp=sharing)
+- **Target Mock Store**: [https://demo.inelabteamdev.com](https://demo.inelabteamdev.com)
+
+---
+
 ## 🛠️ Technology Stack & Architecture
 
 - **Backend Framework**: Express.js (Node.js ES Modules)
