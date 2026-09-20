@@ -10,7 +10,16 @@ let sharedBrowserIsHeadless = null;
  * @param {object} options - Options ({ isHeaded })
  */
 export async function getBrowserInstance(options = {}) {
-    const isHeadless = options.isHeaded !== undefined ? !options.isHeaded : config.headless;
+    // Detect if environment has GUI display capabilities (Linux cloud containers like Render lack $DISPLAY)
+    const hasDisplay = process.platform !== "linux" || Boolean(process.env.DISPLAY);
+    let requestedHeadless = options.isHeaded !== undefined ? !options.isHeaded : config.headless;
+
+    if (!hasDisplay && !requestedHeadless) {
+        logger.info("[Browser Manager] Cloud environment detected without GUI display ($DISPLAY missing). Forcing headless: true for stability.");
+        requestedHeadless = true;
+    }
+
+    const isHeadless = requestedHeadless;
 
     if (sharedBrowser && sharedBrowser.isConnected()) {
         if (sharedBrowserIsHeadless === isHeadless) {
@@ -37,11 +46,32 @@ export async function getBrowserInstance(options = {}) {
     try {
         sharedBrowser = await chromium.launch(launchOptions);
     } catch (launchErr) {
+        logger.warn(`[Browser Manager] Initial browser launch failed: ${launchErr.message}`);
+
+        // If headed mode failed (e.g. display server issue on cloud), fall back to headless
+        if (!isHeadless) {
+            try {
+                logger.info("[Browser Manager] Falling back to headless: true mode...");
+                sharedBrowser = await chromium.launch({ ...launchOptions, headless: true, slowMo: 0 });
+                sharedBrowserIsHeadless = true;
+                return sharedBrowser;
+            } catch (fallbackErr) {
+                logger.warn("[Browser Manager] Headless fallback after headed failure also failed", fallbackErr);
+            }
+        }
+
         if (launchErr.message?.includes("Executable doesn't exist") || launchErr.message?.includes("Please run the following command")) {
             logger.warn("[Browser Manager] Chromium binary missing at runtime, auto-installing via npx playwright install...");
             const { execSync } = await import("child_process");
-            execSync("npx playwright install chromium", { stdio: "inherit" });
-            sharedBrowser = await chromium.launch(launchOptions);
+            try {
+                execSync("npx playwright install chromium", { stdio: "inherit" });
+                sharedBrowser = await chromium.launch({ ...launchOptions, headless: true });
+                sharedBrowserIsHeadless = true;
+                return sharedBrowser;
+            } catch (installErr) {
+                logger.error("[Browser Manager] Auto-install failed", installErr);
+                throw installErr;
+            }
         } else {
             throw launchErr;
         }
